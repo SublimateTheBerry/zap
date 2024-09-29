@@ -25,7 +25,9 @@ jobs:
           go-version: 1.22.7
 
       - name: Build binary
-        run: go build -o zap
+        run: |
+          go mod init github.com/SublimateTheBerry/zap
+          go build -o zap
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
