@@ -10,6 +10,7 @@ on:
       pastebin_id:
         description: 'Pastebin ID for the release description'
         required: true
+
 jobs:
   build:
     name: Build Zap
@@ -39,7 +40,8 @@ jobs:
     name: Create GitHub Release
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    # Remove the condition so it runs on manual dispatch
+    if: github.event_name == 'workflow_dispatch'
 
     steps:
       - name: Download built artifact
