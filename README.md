@@ -118,4 +118,4 @@ Feel free to open issues or submit pull requests for any improvements, new featu
 
 <h2>📜 License</h2>
 
-Zap is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+Zap is licensed under the Custom License. See the [LICENSE](LICENSE) file for more details.
