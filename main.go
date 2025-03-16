@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -20,11 +20,11 @@ type Stats struct {
 	TotalResponseTime  time.Duration
 }
 
-func sendRequest(method, url string, headers map[string]string, body []byte, stats *Stats, silence bool) {
+func sendRequest(method, url string, headers map[string]string, body io.Reader, stats *Stats, silence bool) {
 	defer wg.Done()
 	start := time.Now()
 
-	req, err := http.NewRequest(method, url, bytes.NewBuffer(body))
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return
 	}
@@ -62,6 +62,7 @@ func main() {
 	var connections int
 	var duration time.Duration
 	var method string
+	var bodyInput string
 	var headersInput string
 	var silence bool
 
@@ -69,6 +70,7 @@ func main() {
 	flag.IntVar(&connections, "c", 1, "Number of parallel connections (optional, default: 1)")
 	flag.DurationVar(&duration, "d", 30*time.Second, "Duration of the test (optional, default: 30s)")
 	flag.StringVar(&method, "m", "GET", "HTTP method (GET, POST, PUT, DELETE) (optional, default: GET)")
+	flag.StringVar(&bodyInput, "b", "{}", "Body for POST, PUT or DELETE requests as JSON valid string (optional, default: {})")
 	flag.StringVar(&headersInput, "H", "", "Headers in format 'Key1:Value1,Key2:Value2' (optional)")
 	flag.BoolVar(&silence, "silence", false, "Suppress output of individual request results (optional)")
 	flag.BoolVar(&silence, "slc", false, "Suppress output of individual request results (optional)")
@@ -81,6 +83,7 @@ func main() {
 		fmt.Println("  -c: Number of parallel connections (optional, default: 1)")
 		fmt.Println("  -d: Duration of the test (optional, default: 30s)")
 		fmt.Println("  -m: HTTP method (GET, POST, PUT, DELETE) (optional, default: GET)")
+		fmt.Println("  -b: Request's body for POST, PUT or DELETE as JSON valid string (optional, default: {})")
 		fmt.Println("  -H: Headers in format 'Key1:Value1,Key2:Value2' (optional)")
 		fmt.Println("  --silence, -slc: Suppress output of individual request results (optional)")
 		return
@@ -101,7 +104,7 @@ func main() {
 	for time.Since(startTime) < duration {
 		for i := 0; i < connections; i++ {
 			wg.Add(1)
-			go sendRequest(method, url, headers, nil, stats, silence)
+			go sendRequest(method, url, headers, strings.NewReader(bodyInput), stats, silence)
 		}
 		time.Sleep(100 * time.Millisecond)
 	}
